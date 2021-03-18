@@ -2,6 +2,7 @@
 from django.shortcuts import render
 import pickle
 from predict.models import Predictions
+from django.core.paginator import Paginator
 
 curId = 0
 
@@ -54,7 +55,18 @@ def result(request):
         Q=1
     else:
         S=1
+
+    # call function
     result = getPredictions(name,sex,age,fare,family,C,Q,S)
+    
+    # all predictions
     preds = Predictions.objects.all().order_by('-predicted_date')
-    return render(request , 'result.html',{'preds':preds,'curId':curId})
+    count = len(preds)
+    p = Paginator(preds, 8)
+    print(p.num_pages)
+    
+    # survived and not survived objects
+    surv_cnt = len(Predictions.objects.filter(prediction = "Survived"))
+    nsurv_cnt = len(Predictions.objects.filter(prediction = "Not Survived"))
+    return render(request , 'result.html',{'preds':preds,'curId':curId,'count':count,'surv_cnt':surv_cnt,'nsurv_cnt':nsurv_cnt})
 
