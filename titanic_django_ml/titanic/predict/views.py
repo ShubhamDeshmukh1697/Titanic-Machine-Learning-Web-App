@@ -9,6 +9,18 @@ curId = 0
 def home(request):
     return render(request, 'index.html')
     
+def search(request):
+    query = request.GET['search']
+    allPredsPred = Predictions.objects.filter(prediction__iexact = query)
+    allPredsName = Predictions.objects.filter(name__icontains = query)
+    allPredsGender = Predictions.objects.filter(gender__icontains = query)
+    allPredsLoc = Predictions.objects.filter(Embarked__icontains = query)
+    allPreds = allPredsPred.union(allPredsName,allPredsGender,allPredsLoc)
+    print(allPreds)
+    count = len(allPreds)
+
+    return render(request , 'search.html',{'allPreds':allPreds,'count':count})
+    
 def getPredictions(name,sex,age,fare,family,C,Q,S):
     global curId
     if sex==1:
