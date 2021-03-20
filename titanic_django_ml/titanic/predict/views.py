@@ -2,7 +2,8 @@
 from django.shortcuts import render
 import pickle
 from predict.models import Predictions
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator,EmptyPage , PageNotAnInteger
+import math
 
 curId = 0
 
@@ -11,15 +12,26 @@ def home(request):
     
 def search(request):
     query = request.GET['search']
+    
     allPredsPred = Predictions.objects.filter(prediction__iexact = query)
     allPredsName = Predictions.objects.filter(name__icontains = query)
-    allPredsGender = Predictions.objects.filter(gender__icontains = query)
+    allPredsGender = Predictions.objects.filter(gender__iexact = query)
     allPredsLoc = Predictions.objects.filter(Embarked__icontains = query)
-    allPreds = allPredsPred.union(allPredsName,allPredsGender,allPredsLoc)
-    print(allPreds)
+    allPredsId = Predictions.objects.filter(pid__iexact = query)
+    
+    allPreds = allPredsPred.union(allPredsName,allPredsGender,allPredsLoc,allPredsId)
     count = len(allPreds)
+    surv_cnt = 0
+    nsurv_cnt = 0
+    for i in allPreds:
+        if i.prediction == "Survived":
+            surv_cnt += 1
+        else:
+            nsurv_cnt += 1
 
-    return render(request , 'search.html',{'allPreds':allPreds,'count':count})
+    print(surv_cnt,nsurv_cnt) 
+    
+    return render(request , 'search.html',{'allPreds':allPreds,'count':count,'surv_cnt':surv_cnt,'nsurv_cnt':nsurv_cnt})
     
 def getPredictions(name,sex,age,fare,family,C,Q,S):
     global curId
@@ -29,7 +41,11 @@ def getPredictions(name,sex,age,fare,family,C,Q,S):
         g = "Female"
     model = pickle.load(open("titanic_survival_model.sav", "rb"))
     scaled = pickle.load(open("scaler.sav", "rb"))
+
+    # predicition after scaling of values
     prediction = model.predict(scaled.transform([[sex, age, fare, family, C, Q, S]]))
+    print("scaled values are: ",scaled.transform([[sex, age, fare, family, C, Q, S]]))
+
     if C==1:
         emb = "Cherbourg"
     elif(Q==1):
@@ -74,11 +90,62 @@ def result(request):
     # all predictions
     preds = Predictions.objects.all().order_by('-predicted_date')
     count = len(preds)
+
+    """# PAGINATION
     p = Paginator(preds, 8)
-    print(p.num_pages)
-    
+   
+    page_num = request.GET.get('page',1)
+    try:
+        page=p.page(page_num)
+    except EmptyPage:
+        page = p.page(1)    
+    """
+
     # survived and not survived objects
     surv_cnt = len(Predictions.objects.filter(prediction = "Survived"))
     nsurv_cnt = len(Predictions.objects.filter(prediction = "Not Survived"))
-    return render(request , 'result.html',{'preds':preds,'curId':curId,'count':count,'surv_cnt':surv_cnt,'nsurv_cnt':nsurv_cnt})
+    surv_cnt_per = (surv_cnt*100)/count
+    surv_cnt_per = round(surv_cnt_per,2)
+    nsurv_cnt_per = (nsurv_cnt*100)/count
+    nsurv_cnt_per = round(nsurv_cnt_per,2)
+    context ={
+        'preds':preds,
+        'curId':curId,
+        'count':count,
+        'surv_cnt':surv_cnt,
+        'nsurv_cnt':nsurv_cnt,
+        'nsurv_cnt_per':nsurv_cnt_per,
+        'surv_cnt_per':surv_cnt_per,
+        }
+    return render(request , 'result.html',context)
 
+def predictions(request):
+    allpreds = Predictions.objects.all()
+    count = len(allpreds)
+    surv_cnt = len(Predictions.objects.filter(prediction = "Survived"))
+    nsurv_cnt = len(Predictions.objects.filter(prediction = "Not Survived"))
+    
+    paginator = Paginator(allpreds, 8)
+    page1 = paginator.page(1)
+    for i in page1:
+        print(i)
+    print("page 1 content" ,page1.object_list)
+
+    page_num = request.GET.get('page',1)
+
+    try:
+        preds = paginator.page(page_num)
+    except EmptyPage:
+        preds = paginator.page(1)
+    except PageNotAnInteger:
+        preds = paginator.page(2)
+
+
+    context = {
+        # 'page': page,
+        'preds':preds,
+        'surv_cnt':surv_cnt,
+        'nsurv_cnt':nsurv_cnt,
+        'count':count,
+        }
+    return render(request ,'predictions.html',context)

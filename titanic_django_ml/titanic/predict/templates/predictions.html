@@ -1,0 +1,107 @@
+{% extends 'basic.html' %}
+{% block body %}
+
+<div class="container my-5">
+      <div class="row d-flex justify-content-center">
+        <div class="card mr-2" style="width: 18rem;">
+          <div class="card-body">
+            <h3 class="card-title text-center my-2 font-weight-bold ">Total Predictions</h3>
+            <hr>
+            <h3 class="card-text text-center font-weight-bold text-primary">{{count}}</h3>
+            
+          </div>
+        </div>
+        <div class="card mr-2 rounded" style="width: 18rem;">
+          <div class="card-body">
+            <h3 class="card-title text-center my-2 font-weight-bold ">Survived</h3>
+            <hr>
+            <h3 class="card-text text-center font-weight-bold text-success">{{surv_cnt}}</h3>
+          </div>
+        </div>
+        <div class="card mr-2" style="width: 18rem;">
+          <div class="card-body">
+            <h3 class="card-title text-center my-2 font-weight-bold">Not Survived</h3>
+            <hr>
+            <h3 class="card-text text-center font-weight-bold text-danger">{{nsurv_cnt}}</h3>
+            
+          </div>
+        </div>
+    </div>
+    </div>
+<table class="table my-4 ">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Name</th>
+      <th scope="col">Gender</th>
+      <th scope="col">Age</th>
+      <th scope="col">Fare</th>
+      <th scope="col">Family Count</th>
+      <th scope="col">Embarked</th>
+      <th scope="col">Date-Time</th>
+      <th scope="col">Prediction</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in preds %}
+    <tr>
+      <th scope="row">{{i.pid}}</th>
+      <td>{{i.name}}</td> 
+      <td>{{i.gender}}</td>
+      <td>{{i.age}}</td>
+      <td>{{i.fare}}</td>
+      <td>{{i.family_cnt}}</td>
+      <td>{{i.Embarked}}</td>
+      <td>{{i.predicted_date}}</td>
+      <td><b>{{i.prediction}}</b></td>
+    </tr>    
+    {% endfor %}
+    
+  </tbody>
+</table>
+<div class="container my-5">
+  <div class="d-flex justify-content-center">
+    <nav aria-label="...">
+      <ul class="pagination">
+        <!-- first page link -->
+        <li class="page-item">
+          <a class="page-link" href="{% url 'predictions' %}?page=1">First<span class="sr-only"></span></a>
+        </li>
+
+        <!-- previous page link -->
+        {% if preds.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="{% url 'predictions' %}?page={{preds.previous_page_number}}" tabindex="-1">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#" tabindex="-1">Previous</a>
+        </li>
+        {% endif %}
+        <!-- current page link -->
+        <li class="page-item"><a class="page-link" href="{% url 'predictions' %}?page={{preds.previous_page_number}}">{{preds.previous_page_number}}</a></li>
+        <li class="page-item active">
+          <a class="page-link" href="#">{{preds.number}} <span class="sr-only">(current)</span></a>
+        </li>
+        <!-- next page link -->
+        {% if preds.has_next %}
+        <li class="page-item"><a class="page-link" href="{% url 'predictions' %}?page={{preds.next_page_number}}">{{preds.next_page_number}}</a></li>
+        <li class="page-item">
+          <a class="page-link" href="{% url 'predictions' %}?page={{preds.next_page_number}}">Next</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="">Next</a>
+        </li>
+        {% endif %}
+        <!-- last page -->
+        <li class="page-item">
+          <a class="page-link" href="{% url 'predictions' %}?page={{preds.paginator.num_pages}}">Last <span class="sr-only"></span></a>
+        </li>
+        
+      </ul>
+    </nav>
+  </div>
+</div>
+
+{% endblock body %}
