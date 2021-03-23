@@ -64,22 +64,26 @@
     <nav aria-label="...">
       <ul class="pagination">
         <!-- first page link -->
-        <li class="page-item">
-          <a class="page-link" href="{% url 'predictions' %}?page=1">First<span class="sr-only"></span></a>
-        </li>
+        
 
         <!-- previous page link -->
         {% if preds.has_previous %}
         <li class="page-item">
           <a class="page-link" href="{% url 'predictions' %}?page={{preds.previous_page_number}}" tabindex="-1">Previous</a>
         </li>
+        <li class="page-item">
+          <a class="page-link" href="?page=1">First<span class="sr-only"></span></a>
+        </li>
         {% else %}
         <li class="page-item disabled">
           <a class="page-link" href="#" tabindex="-1">Previous</a>
         </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="?page=1">First<span class="sr-only"></span></a>
+        </li>
         {% endif %}
         <!-- current page link -->
-        <li class="page-item"><a class="page-link" href="{% url 'predictions' %}?page={{preds.previous_page_number}}">{{preds.previous_page_number}}</a></li>
+        {% comment %} <li class="page-item"><a class="page-link" href="{% url 'predictions' %}?page={{preds.previous_page_number}}">{{preds.previous_page_number}}</a></li> {% endcomment %}
         <li class="page-item active">
           <a class="page-link" href="#">{{preds.number}} <span class="sr-only">(current)</span></a>
         </li>
@@ -89,16 +93,18 @@
         <li class="page-item">
           <a class="page-link" href="{% url 'predictions' %}?page={{preds.next_page_number}}">Next</a>
         </li>
+        <li class="page-item">
+          <a class="page-link" href="{% url 'predictions' %}?page={{preds.paginator.num_pages}}">Last <span class="sr-only"></span></a>
+        </li>
         {% else %}
         <li class="page-item disabled">
           <a class="page-link" href="">Next</a>
         </li>
-        {% endif %}
-        <!-- last page -->
-        <li class="page-item">
+        <li class="page-item disabled">
           <a class="page-link" href="{% url 'predictions' %}?page={{preds.paginator.num_pages}}">Last <span class="sr-only"></span></a>
         </li>
-        
+        {% endif %}
+        <!-- last page -->
       </ul>
     </nav>
   </div>

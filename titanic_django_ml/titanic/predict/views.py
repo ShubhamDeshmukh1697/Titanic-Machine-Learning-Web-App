@@ -132,13 +132,13 @@ def predictions(request):
     print("page 1 content" ,page1.object_list)
 
     page_num = request.GET.get('page',1)
-
+    print("get page number is:",page_num)
     try:
         preds = paginator.page(page_num)
     except EmptyPage:
-        preds = paginator.page(1)
-    except PageNotAnInteger:
         preds = paginator.page(2)
+    except PageNotAnInteger:
+        preds = paginator.page(1)
 
 
     context = {
